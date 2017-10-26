@@ -1,0 +1,21 @@
+version: "3"
+services:
+  admin:
+    image: augustash/alpine-magento-cli
+    networks:
+      - private-net
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 64000
+        hard: 64000
+    depends_on:
+      - mysql
+    volumes:
+      - ./conf/auth.json:/.composer/auth.json
+      - data-src:/src
+    env_file: env/magento.env
+    environment:
+      - MAGENTO_VERSION=2.2.0
+      - MAGENTO_INSTALL_DB=true
+      - MAGENTO_USE_SAMPLE_DATA=true

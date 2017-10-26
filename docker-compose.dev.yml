@@ -1,0 +1,116 @@
+version: "3"
+services:
+  proxy:
+    image: augustash/alpine-nginx
+    networks:
+      - public-net
+    depends_on:
+      - varnish
+    ports:
+      - "443:443"
+    volumes:
+      - data-keys:/etc/nginx/keys
+      - ./conf/nginx/proxy.conf:/etc/nginx/hosts.d/default.conf
+    environment:
+      - NGINX_DH_SIZE=128
+
+  varnish:
+    image: augustash/alpine-varnish
+    networks:
+      - public-net
+      - private-net
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf/varnish/default.vcl:/etc/varnish/default.vcl
+    environment:
+      - VARNISH_CACHE_SIZE=64M
+
+  web:
+    image: augustash/alpine-nginx
+    networks:
+      - private-net
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    volumes:
+      - data-keys:/etc/nginx/keys
+      - ./conf/nginx/site.conf:/etc/nginx/hosts.d/default.conf
+      - ./src:/src
+    environment:
+      - NGINX_DH_SIZE=128
+
+  app:
+    image: augustash/alpine-phpfpm
+    networks:
+      - private-net
+    depends_on:
+      - mysql
+      - redis-sessions
+      - redis-cache
+    volumes:
+      - ./conf/Glob.php:/src/vendor/zendframework/zend-stdlib/src/Glob.php
+      - ./src:/src
+
+  mysql:
+    image: percona:5.7
+    networks:
+      - private-net
+    ports:
+      - "3306:3306"
+    volumes:
+      - data-db:/var/lib/mysql
+      - ./conf/percona/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
+    env_file: env/percona.env
+
+  redis-sessions:
+    image: redis:3.2-alpine
+    networks:
+      - private-net
+    ports:
+      - "6789"
+    volumes:
+      - ./conf/redis/persistent.conf:/usr/local/etc/redis/redis.conf
+
+  redis-cache:
+    image: redis:3.2-alpine
+    networks:
+      - private-net
+    ports:
+      - "6789"
+    volumes:
+      - ./conf/redis/volatile.conf:/usr/local/etc/redis/redis.conf
+
+  cli:
+    image: augustash/alpine-magento-cli
+    networks:
+      - private-net
+    depends_on:
+      - mysql
+    volumes:
+      - ./conf/auth.json:/.composer/auth.json
+      - ./conf/cron/crontab:/etc/crontabs/ash
+      - ./src:/src
+
+  admin:
+    image: augustash/alpine-magento-cli
+    networks:
+      - private-net
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 64000
+        hard: 64000
+    depends_on:
+      - mysql
+    volumes:
+      - ./conf/auth.json:/.composer/auth.json
+      - ./src:/src
+    env_file: env/magento.env
+    environment:
+      - MAGENTO_VERSION=2.2.0
+      - MAGENTO_INSTALL_DB=true
+      - MAGENTO_USE_SAMPLE_DATA=true

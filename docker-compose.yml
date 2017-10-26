@@ -1,0 +1,92 @@
+version: "3"
+services:
+  proxy:
+    image: augustash/alpine-nginx
+    networks:
+      - public-net
+    depends_on:
+      - varnish
+    ports:
+      - "443:443"
+    volumes:
+      - data-keys:/etc/nginx/keys
+      - ./conf/nginx/proxy.conf:/etc/nginx/hosts.d/default.conf
+
+  varnish:
+    image: augustash/alpine-varnish
+    networks:
+      - public-net
+      - private-net
+    depends_on:
+      - web
+    volumes:
+      - ./conf/varnish/default.vcl:/etc/varnish/default.vcl
+    environment:
+      - VARNISH_CACHE_SIZE=256M
+
+  web:
+    image: augustash/alpine-nginx
+    networks:
+      - private-net
+    depends_on:
+      - app
+    volumes:
+      - data-keys:/etc/nginx/keys
+      - data-src:/src
+      - ./conf/nginx/site.conf:/etc/nginx/hosts.d/default.conf
+
+  app:
+    image: augustash/alpine-phpfpm
+    networks:
+      - private-net
+    depends_on:
+      - mysql
+      - redis-sessions
+      - redis-cache
+    volumes:
+      - data-src:/src
+
+  mysql:
+    image: percona:5.7
+    networks:
+      - private-net
+    volumes:
+      - data-db:/var/lib/mysql
+      - ./conf/percona/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
+    env_file: env/percona.env
+
+  redis-sessions:
+    image: redis:3.2-alpine
+    networks:
+      - private-net
+    volumes:
+      - ./conf/redis/persistent.conf:/usr/local/etc/redis/redis.conf
+
+  redis-cache:
+    image: redis:3.2-alpine
+    networks:
+      - private-net
+    volumes:
+      - ./conf/redis/volatile.conf:/usr/local/etc/redis/redis.conf
+
+  cli:
+    image: augustash/alpine-magento-cli
+    networks:
+      - private-net
+    depends_on:
+      - mysql
+    volumes:
+      - data-src:/src
+      - ./conf/auth.json:/.composer/auth.json
+      - ./conf/cron/crontab:/etc/crontabs/ash
+
+# will use the default driver which should be "bridge"; if run via stack, will be a load-balanced overlay network
+networks:
+  public-net:
+  private-net:
+
+# will use the default driver which should be "local"
+volumes:
+  data-keys:
+  data-src:
+  data-db:
