@@ -52,7 +52,7 @@ services:
       - redis-sessions
       - redis-cache
     volumes:
-      - ./conf/Glob.php:/src/vendor/zendframework/zend-stdlib/src/Glob.php
+      - ./conf/php/mailhog.ini:/etc/php7/conf.d/99_mailhog.ini
       - ./src:/src
 
   mysql:
@@ -94,6 +94,16 @@ services:
       - ./conf/auth.json:/.composer/auth.json
       - ./conf/cron/crontab:/etc/crontabs/ash
       - ./src:/src
+
+  mailhog:
+    image: augustash/alpine-mailhog
+    networks:
+      - public-net
+      - private-net
+    ports:
+      - "8025:8025"
+    depends_on:
+      - app
 
   admin:
     image: augustash/alpine-magento-cli
