@@ -121,6 +121,6 @@ services:
       - ./src:/src
     env_file: env/magento.env
     environment:
-      - MAGENTO_VERSION=2.2.0
+      - MAGENTO_VERSION=2.2.1
       - MAGENTO_INSTALL_DB=true
       - MAGENTO_USE_SAMPLE_DATA=true
