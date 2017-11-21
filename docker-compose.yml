@@ -33,6 +33,7 @@ services:
     volumes:
       - data-keys:/etc/nginx/keys
       - data-src:/src
+      - ./conf/nginx/magento.conf:/etc/nginx/magento.conf
       - ./conf/nginx/site.conf:/etc/nginx/hosts.d/default.conf
 
   app:
