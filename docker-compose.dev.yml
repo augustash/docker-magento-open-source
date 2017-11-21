@@ -38,6 +38,7 @@ services:
       - "8080:80"
     volumes:
       - data-keys:/etc/nginx/keys
+      - ./conf/nginx/magento.conf:/etc/nginx/magento.conf
       - ./conf/nginx/site.conf:/etc/nginx/hosts.d/default.conf
       - ./src:/src
     environment:
@@ -49,6 +50,7 @@ services:
       - private-net
     depends_on:
       - mysql
+      - mailhog
       - redis-sessions
       - redis-cache
     volumes:
@@ -102,8 +104,6 @@ services:
       - private-net
     ports:
       - "8025:8025"
-    depends_on:
-      - app
 
   admin:
     image: augustash/alpine-magento-cli

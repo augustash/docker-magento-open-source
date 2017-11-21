@@ -12,8 +12,8 @@ services:
     depends_on:
       - mysql
     volumes:
-      - ./conf/auth.json:/.composer/auth.json
       - data-src:/src
+      - ./conf/auth.json:/.composer/auth.json
     env_file: env/magento.env
     environment:
       - MAGENTO_VERSION=2.2.1
