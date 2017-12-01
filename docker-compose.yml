@@ -1,7 +1,7 @@
 version: "3"
 services:
   proxy:
-    image: augustash/alpine-nginx
+    image: augustash/alpine-nginx:1.0.2
     networks:
       - public-net
     depends_on:
@@ -13,7 +13,7 @@ services:
       - ./conf/nginx/proxy.conf:/etc/nginx/hosts.d/default.conf
 
   varnish:
-    image: augustash/alpine-varnish
+    image: augustash/alpine-varnish:1.0.2
     networks:
       - public-net
       - private-net
@@ -25,7 +25,7 @@ services:
       - VARNISH_CACHE_SIZE=256M
 
   web:
-    image: augustash/alpine-nginx
+    image: augustash/alpine-nginx:1.0.2
     networks:
       - private-net
     depends_on:
@@ -37,7 +37,7 @@ services:
       - ./conf/nginx/site.conf:/etc/nginx/hosts.d/default.conf
 
   app:
-    image: augustash/alpine-phpfpm
+    image: augustash/alpine-phpfpm:1.0.2
     networks:
       - private-net
     depends_on:
@@ -71,7 +71,7 @@ services:
       - ./conf/redis/volatile.conf:/usr/local/etc/redis/redis.conf
 
   cli:
-    image: augustash/alpine-magento-cli
+    image: augustash/alpine-magento-cli:1.0.2
     networks:
       - private-net
     depends_on:

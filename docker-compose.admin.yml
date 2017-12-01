@@ -1,7 +1,7 @@
 version: "3"
 services:
   admin:
-    image: augustash/alpine-magento-cli
+    image: augustash/alpine-magento-cli:1.0.2
     networks:
       - private-net
     ulimits:
